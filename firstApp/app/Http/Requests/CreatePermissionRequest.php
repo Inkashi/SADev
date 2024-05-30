@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use App\DTO\PermissionDTO;
 
 class CreatePermissionRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class CreatePermissionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        if(Auth::check()){
+        if (Auth::check()) {
             return true;
         }
         return false;
@@ -26,10 +27,19 @@ class CreatePermissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:Permistions',
-            'code' => 'required|unique:Permistions',
+            'name' => 'required|unique:Permissions',
+            'code' => 'required|unique:Permissions',
         ];
     }
 
-    public function createDTO():PermistionDTO
+    public function createDTO(): PermissionDTO
+    {
+        return new PermissionDTO(
+            $this->input('name'),
+            $this->input('description'),
+            $this->input('code'),
+            $this->input('deleted_by'),
+            $this->input('created_by')
+        );
+    }
 }

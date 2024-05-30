@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use App\DTO\RoleAndPermissionDTO;
 
 class CreateRoleAndPermissionRequest extends FormRequest
 {
@@ -11,6 +13,9 @@ class CreateRoleAndPermissionRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        if (Auth::check()) {
+            return true;
+        }
         return false;
     }
 
@@ -21,8 +26,16 @@ class CreateRoleAndPermissionRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
-        ];
+        return [];
+    }
+
+    public function createDTO(): RoleAndPermissionDTO
+    {
+        return new RoleAndPermissionDTO(
+            $this->input('role_id'),
+            $this->input('permission_id'),
+            $this->input('deleted_by'),
+            $this->input('created_by')
+        );
     }
 }
