@@ -33,8 +33,11 @@ class MainController extends Controller
         $userTokenCount = $user->tokens()->count();
 
         if ($userTokenCount >= env('MAX_ACTIVE_TOKENS', 3)) {
-            $oldestToken = $user->tokens()->oldest()->first();
-            $oldestToken->revoke();
+            $oldestToken = $user->tokens()->get();
+            $oldestToken = $oldestToken->filter(function ($token) {
+                return $token->revoked == false;
+            });
+            $oldestToken->sortBy('created_at')->first()->revoke();
         }
 
         $tokenResult = $user->createToken('Personal Access Token');
