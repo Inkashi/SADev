@@ -26,7 +26,7 @@ Route::middleware('checkRole')->group(function () {
 			Route::delete('{id}/hard', [UserController::class, 'hardDeleteUser']);
 			Route::delete('{id}/soft', [UserController::class, 'softDeleteUser']);
 			Route::post('{id}/restore', [UserController::class, 'restoreDeletedUser']);
-			Route::post('{id}/changeUserData', [UserController::class, 'changeUserData']);
+			Route::put('{id}/changeUserData', [UserController::class, 'changeUserData']);
 			Route::get('{id}/role', [UserController::class, 'getUserRoles']);
 			Route::post('{id}/role', [UserController::class, 'giveUserRoles']);
 			Route::delete('{id}/role/{role_id}/hard', [UserController::class, 'hardDeleteRole']);

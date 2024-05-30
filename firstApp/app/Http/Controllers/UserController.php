@@ -130,48 +130,12 @@ class UserController extends Controller
 
 	public function changeUserData(Request $request)
 	{
-		$user_id = $request->id;
+		$user = UsersAndRoles::where('user_id', $request->id)->first();
+		$role = $request->role; //int значение
 
-		$new_email = $request->email;
-		$new_birthday = $request->birthday;
-
-		$user = User::find($user_id);
-
-		if (!$user) {
-			return response()->json(['status' => '404', 'message' => 'User not found'], 404);
-		}
-
-		$validator = Validator::make($request->all(), [
-			'email' => 'sometimes|string|email|unique:users,email,' . $user_id,
-			'birthday' => 'sometimes|date',
+		$user->update([
+			'role_id' => $role,
 		]);
-
-		if ($validator->fails()) {
-			return response()->json(['status' => '422', 'errors' => $validator->errors()], 422);
-		}
-
-		DB::beginTransaction();
-		try {
-			if (!empty($new_email)) {
-				$user->email = $new_email;
-			}
-
-			if (!empty($new_birthday)) {
-				$user->birthday = $new_birthday;
-			}
-
-			$user->save();
-
-			DB::commit();
-
-			return response()->json(['status' => '200', 'message' => 'User updated']);
-		} catch (\Exception $e) {
-			DB::rollBack();
-			return response()->json(['status' => '500', 'message' => 'Error'], 500);
-		}
-
-		$user->save();
-
 		return response()->json(['status' => '200']);
 	}
 }
