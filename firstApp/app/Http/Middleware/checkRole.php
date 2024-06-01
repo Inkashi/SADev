@@ -6,26 +6,35 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Symfony\Component\HttpFoundation\Response;
+use App\Models\UsersAndRoles;
+use App\Models\Role;
+use App\Models\RolesAndPermissions;
+use Illuminate\Support\Facades\Auth;
+
+use App\Models\User;
 
 class checkRole
 {
     public function handle(Request $request, Closure $next): Response
     {
         $actions = [
+            'getUsers' => 'get-list-user',
             'getUserRoles' => 'read-user',
             'giveUserRoles' => 'update-user',
-            'hardDeleteRole' => 'update-user',
-            'softDeleteRole' => 'update-user',
-            'restoreDeletedRole' => 'update-user',
-
+            'hardDeleteUserRole' => 'update-user',
+            'softDeleteUserRole' => 'update-user',
+            'restoreDeletedUserRole' => 'update-user',
+            'hardDeleteUser' => 'delete-user',
+            'softDeleteUser' => 'delete-user',
+            'restoreDeletedUser' => 'delete-user',
+            'changeUserData' => 'update-user',
             'getRoles' => 'get-list-role',
             'getTargetRole' => 'read-role',
             'createRole' => 'create-role',
-            'updateRole' => 'update-rol',
-            'hardDeleteRole' => 'delete-rol',
-            'softDeleteRole' => 'delete-rol',
+            'updateRole' => 'update-role',
+            'hardDeleteRole' => 'delete-role',
+            'softDeleteRole' => 'delete-role',
             'restoreDeletedRole' => 'restore-role',
-
             'getPermissions' => 'get-list-permission',
             'getTargetPermission' => 'read-permission',
             'createPermission' => 'create-permission',
@@ -33,53 +42,27 @@ class checkRole
             'hardDeletePermission' => 'delete-permission',
             'softDeletePermission' => 'delete-permission',
             'restoreDeletedPermission' => 'restore-permission',
-
             'getRolePermission' => 'read-role',
             'addRolePermission' => 'update-role',
             'hardDeleteRolePermission' => 'update-role',
             'softDeleteRolePermission' => 'update-role',
             'restoreDeletedRolePermission' => 'update-role',
-
-            'deleteUser' => 'delete-user',
-            'changeUserData' => 'update-user'
+            'updateInformation' => 'read-user',
         ];
 
+        //проверка наличия нужного permission
+        $roles = User::find(Auth::id())->roles();
+        $userPermissions = $roles->pluck('id')->map(function ($id) {
+            return Role::find($id)->permissions()->pluck('name');
+        });
+        $userPermissions =  $userPermissions->flatten()->toArray();
+        $commonElements = array_intersect($actions, $userPermissions);
         $route = $request->route();
         $action = explode('@', $route->getActionName())[1];
-        $user = $request->user();
-        if ($user) {
-            $userRoles = $request->user()->roles();
-            $roles = [];
-            foreach ($userRoles as $role) {
-                array_push($roles, $role->id);
-            }
-            $admin = in_array(1, $roles);
-            $user = in_array(2, $roles);
-            $guest = in_array(3, $roles);
-            if ($admin and ($action == 'hardDeleteRole' or $action == 'softDeleteRole')) {
-                if ($request->user()->id == $request->id and $request->role_id == 1) {
-                    return response()->json(['message' => 'Админа не трогать'], 403);
-                }
-            }
-
-            if ($user and !$admin) {
-                if ($action != 'getUsers' and $action != 'getUserRoles') {
-                    return response()->json(['message' => $actions[$action]], 403);
-                } elseif ($action == 'getUserRoles') {
-                    if ($request->user()->id != $request->id) {
-                        return response()->json(['message' => $actions[$action]], 403);
-                    }
-                }
-            } elseif ($guest and !$admin) {
-                if ($action != 'getUsers') {
-                    return response()->json(['message' => $actions[$action]], 403);
-                }
-            }
+        if (array_key_exists($action, $commonElements)) {
+            return $next($request);
         } else {
-            if ($action != 'getUsers') {
-                return response()->json(['message' => $actions[$action]], 403);
-            }
+            return response()->json(['error' => "You need this permission -> " . $actions[$action]], 403);
         }
-        return $next($request);
     }
 }

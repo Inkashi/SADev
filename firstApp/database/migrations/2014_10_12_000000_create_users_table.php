@@ -17,10 +17,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->date('birthday');
+            $table->timestamp('birthday');
             $table->rememberToken();
             $table->timestamps();
-            $table->dateTime('deleted_at')->nullable();
+            $table->integer('deleted_at')->nullable();
         });
     }
 

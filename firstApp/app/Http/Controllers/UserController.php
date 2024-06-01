@@ -6,14 +6,17 @@ use Illuminate\Http\Request;
 use App\DTO\UserCollectionDTO;
 use App\DTO\UserAndRoleCollectionDTO;
 use App\Models\UsersAndRoles;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Role;
 use App\DTO\RoleCollectionDTO;
 use App\Http\Requests\ChangeUserAndRoleRequest;
 use App\Http\Requests\CreateUserAndRoleRequest;
+use App\Http\Requests\UpdateInfoRequest;
 use App\Http\Requests\UserRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -46,7 +49,7 @@ class UserController extends Controller
 		$count = UsersAndRoles::where('user_id', $user_id)->where('role_id', $role_id)->count();
 
 		if ($count) {
-			return response()->json(['status' => '501']);
+			return response()->json(['error' => 'The user already has such a role']);
 		}
 
 		UsersAndRoles::create([
@@ -57,7 +60,7 @@ class UserController extends Controller
 		return response()->json(['status' => '200']);
 	}
 
-	public function hardDeleteRole(ChangeUserAndRoleRequest $request)
+	public function hardDeleteUserRole(ChangeUserAndRoleRequest $request)
 	{
 		$user_id = $request->id;
 		$role_id = $request->role_id;
@@ -69,7 +72,7 @@ class UserController extends Controller
 		return response()->json(['status' => '200']);
 	}
 
-	public function softDeleteRole(ChangeUserAndRoleRequest $request)
+	public function softDeleteUserRole(ChangeUserAndRoleRequest $request)
 	{
 
 		$user_id = $request->id;
@@ -84,7 +87,7 @@ class UserController extends Controller
 		return response()->json(['status' => '200']);
 	}
 
-	public function restoreDeletedRole(ChangeUserAndRoleRequest $request)
+	public function restoreDeletedUserRole(ChangeUserAndRoleRequest $request)
 	{
 		$user_id = $request->id;
 		$role_id = $request->role_id;
@@ -136,6 +139,41 @@ class UserController extends Controller
 		$user->update([
 			'role_id' => $role,
 		]);
+		return response()->json(['status' => '200']);
+	}
+
+	public function updateInformation(UpdateInfoRequest $request)
+	{
+		$new_pass = $request->new_pass;
+		$new_email = $request->new_email;
+		$new_birthday = $request->new_birthday;
+		$new_username = $request->new_username;
+
+		$user = User::find(Auth::id());
+		if (!$user || !Hash::check($request->old_pass, $user->password)) {
+			return response()->json(['message' => 'Old password is incorrect'], 401);
+		}
+		if ($new_pass != '') {
+			$user->update([
+				'password' => $new_pass,
+			]);
+			$user->token()->revoke();
+		}
+		if ($new_email != '') {
+			$user->update([
+				'email' => $new_email,
+			]);
+		}
+		if ($new_birthday != '') {
+			$user->update([
+				'birthday' => $new_birthday,
+			]);
+		}
+		if ($new_username != '') {
+			$user->update([
+				'username' => $new_username,
+			]);
+		}
 		return response()->json(['status' => '200']);
 	}
 }

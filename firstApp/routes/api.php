@@ -29,9 +29,10 @@ Route::middleware('checkRole')->group(function () {
 			Route::put('{id}/changeUserData', [UserController::class, 'changeUserData']);
 			Route::get('{id}/role', [UserController::class, 'getUserRoles']);
 			Route::post('{id}/role', [UserController::class, 'giveUserRoles']);
-			Route::delete('{id}/role/{role_id}/hard', [UserController::class, 'hardDeleteRole']);
-			Route::delete('{id}/role/{role_id}/soft', [UserController::class, 'softDeleteRole']);
-			Route::post('{id}/role/{role_id}/restore', [UserController::class, 'restoreDeletedRole']);
+			Route::delete('{id}/role/{role_id}/hard', [UserController::class, 'hardDeleteUserRole']);
+			Route::delete('{id}/role/{role_id}/soft', [UserController::class, 'softDeleteUserRole']);
+			Route::post('{id}/role/{role_id}/restore', [UserController::class, 'restoreDeletedUserRole']);
+			Route::put('updateInformation', [UserController::class, 'updateInformation']);
 		});
 
 		Route::prefix('policy')->group(function () {

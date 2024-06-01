@@ -53,11 +53,21 @@ class RoleController extends Controller
 		return response()->json($role);
 	}
 
+	public function validateRole($role)
+	{
+		if ($role == 1) {
+			return response()->json(['error' => "You can't remove the admin"]);
+		}
+		return true;
+	}
+
 	public function hardDeleteRole(ChangeRoleRequest $request)
 	{
-
 		$role_id = $request->id;
-
+		$validationResult = $this->validateRole($role_id);
+		if ($validationResult !== true) {
+			return $validationResult;
+		}
 		$role = Role::withTrashed()->find($role_id);
 
 		$role->forcedelete();
@@ -67,12 +77,17 @@ class RoleController extends Controller
 
 	public function softDeleteRole(ChangeRoleRequest $request)
 	{
-
 		$role_id = $request->id;
+		$validationResult = $this->validateRole($role_id);
+		if ($validationResult !== true) {
+			return $validationResult;
+		}
 		$user = $request->user();
 
 		$role = Role::where('id', $role_id)->first();
-
+		if (!$role) {
+			return response()->json(['error' => "The role with the given id does not exist"]);
+		}
 		$role->deleted_by = $user->id;
 		$role->delete();
 		$role->save();
