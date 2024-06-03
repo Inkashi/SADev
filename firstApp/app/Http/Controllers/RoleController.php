@@ -101,6 +101,7 @@ class RoleController extends Controller
 				$newRequest->replace([
 					'id' => $role_id,
 					'permission_id' => $rolePermissions->id,
+					'need_logs' => 'true',
 				]);
 				$roleAndPermission->hardDeleteRolePermission($newRequest);
 			});
@@ -137,6 +138,7 @@ class RoleController extends Controller
 				$newRequest->replace([
 					'id' => $role_id,
 					'permission_id' => $rolePermissions->id,
+					'need_logs' => 'true',
 				]);
 				$roleAndPermission->softDeleteRolePermission($newRequest);
 			});
@@ -176,6 +178,7 @@ class RoleController extends Controller
 				$newRequest->replace([
 					'id' => $role_id,
 					'permission_id' => $rolePermissions->permission_id,
+					'need_logs' => 'no',
 				]);
 				$roleAndPermission->restoreDeletedRolePermission($newRequest);
 			});

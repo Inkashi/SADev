@@ -20,56 +20,54 @@ use App\Http\Controllers\LogsController;
 |
 */
 
-Route::middleware('checkRole')->group(function () {
-	Route::prefix('ref')->group(function () {
-		Route::prefix('user')->group(function () {
-			Route::get('/', [UserController::class, 'getUsers']);
-			Route::delete('{id}/hard', [UserController::class, 'hardDeleteUser']);
-			Route::delete('{id}/soft', [UserController::class, 'softDeleteUser']);
-			Route::post('{id}/restore', [UserController::class, 'restoreDeletedUser']);
-			Route::put('{id}/changeUserRole', [UserController::class, 'changeUserRole']);
-			Route::get('{id}/role', [UserController::class, 'getUserRoles']);
-			Route::post('{id}/role', [UserController::class, 'giveUserRoles']);
-			Route::delete('{id}/role/{role_id}/hard', [UserController::class, 'hardDeleteUserRole']);
-			Route::delete('{id}/role/{role_id}/soft', [UserController::class, 'softDeleteUserRole']);
-			Route::post('{id}/role/{role_id}/restore', [UserController::class, 'restoreDeletedUserRole']);
-			Route::put('updateInformation', [UserController::class, 'updateInformation']);
-			Route::get('{id}/story', [LogsController::class, 'getUserLogs']);
-		});
+Route::prefix('ref')->group(function () {
+	Route::prefix('user')->group(function () {
+		Route::get('/', [UserController::class, 'getUsers'])->middleware('checkRole:get-list-user');
+		Route::delete('{id}/hard', [UserController::class, 'hardDeleteUser'])->middleware('checkRole:delete-user');
+		Route::delete('{id}/soft', [UserController::class, 'softDeleteUser'])->middleware('checkRole:delete-user');
+		Route::post('{id}/restore', [UserController::class, 'restoreDeletedUser'])->middleware('checkRole:delete-user');
+		Route::put('{id}/changeUserRole', [UserController::class, 'changeUserRole'])->middleware('checkRole:update-user');
+		Route::get('{id}/role', [UserController::class, 'getUserRoles'])->middleware('checkRole:read-user');
+		Route::post('{id}/role', [UserController::class, 'giveUserRoles'])->middleware('checkRole:update-user');
+		Route::delete('{id}/role/{role_id}/hard', [UserController::class, 'hardDeleteUserRole'])->middleware('checkRole:delete-user');
+		Route::delete('{id}/role/{role_id}/soft', [UserController::class, 'softDeleteUserRole'])->middleware('checkRole:delete-user');
+		Route::post('{id}/role/{role_id}/restore', [UserController::class, 'restoreDeletedUserRole'])->middleware('checkRole:delete-user');
+		Route::put('updateInformation', [UserController::class, 'updateInformation'])->middleware('checkRole:read-user');
+		Route::get('{id}/story', [LogsController::class, 'getUserLogs'])->middleware('checkRole:get-logs-user,delete-user');
+	});
 
-		Route::prefix('policy')->group(function () {
-			Route::get('role', [RoleController::class, 'getRoles']);
-			Route::get('role/{id}', [RoleController::class, 'getTargetRole']);
-			Route::post('role', [RoleController::class, 'createRole']);
-			Route::put('role/{id}', [RoleController::class, 'updateRole']);
-			Route::delete('role/{id}/hard', [RoleController::class, 'hardDeleteRole']);
-			Route::delete('role/{id}/soft', [RoleController::class, 'softDeleteRole']);
-			Route::post('role/{id}/restore', [RoleController::class, 'restoreDeletedRole']);
-			Route::get('role/{id}/story', [LogsController::class, 'getRoleLogs']);
-
-
-
-			Route::get('permission', [PermissionController::class, 'getPermissions']);
-			Route::get('permission/{id}', [PermissionController::class, 'getTargetPermission']);
-			Route::post('permission', [PermissionController::class, 'createPermission']);
-			Route::put('permission/{id}', [PermissionController::class, 'updatePermission']);
-			Route::delete('permission/{id}/hard', [PermissionController::class, 'hardDeletePermission']);
-			Route::delete('permission/{id}/soft', [PermissionController::class, 'softDeletePermission']);
-			Route::post('permission/{id}/restore', [PermissionController::class, 'restoreDeletedPermission']);
-			Route::get('permission/{id}/story', [LogsController::class, 'getPermissionLogs']);
+	Route::prefix('policy')->group(function () {
+		Route::get('role', [RoleController::class, 'getRoles'])->middleware('checkRole:get-list-role');
+		Route::get('role/{id}', [RoleController::class, 'getTargetRole'])->middleware('checkRole:read-role');
+		Route::post('role', [RoleController::class, 'createRole'])->middleware('checkRole:create-role');
+		Route::put('role/{id}', [RoleController::class, 'updateRole'])->middleware('checkRole:update-role');
+		Route::delete('role/{id}/hard', [RoleController::class, 'hardDeleteRole'])->middleware('checkRole:delete-role');
+		Route::delete('role/{id}/soft', [RoleController::class, 'softDeleteRole'])->middleware('checkRole:delete-role');
+		Route::post('role/{id}/restore', [RoleController::class, 'restoreDeletedRole'])->middleware('checkRole:restore-role');
+		Route::get('role/{id}/story', [LogsController::class, 'getRoleLogs'])->middleware('checkRole:get-logs-role');
 
 
 
-			Route::get('role/{id}/permission', [RoleAndPermissionController::class, 'getRolePermission']);
-			Route::get('role/{id}/permission/{permission_id}', [RoleAndPermissionController::class, 'addRolePermission']);
-			Route::delete('role/{id}/permission/{permission_id}/hard', [RoleAndPermissionController::class, 'hardDeleteRolePermission']);
-			Route::delete('role/{id}/permission/{permission_id}/soft', [RoleAndPermissionController::class, 'softDeleteRolePermission']);
-			Route::post('role/{id}/permission/{permission_id}/restore', [RoleAndPermissionController::class, 'restoreDeletedRolePermission']);
-		});
+		Route::get('permission', [PermissionController::class, 'getPermissions'])->middleware('checkRole:get-list-permission');
+		Route::get('permission/{id}', [PermissionController::class, 'getTargetPermission'])->middleware('checkRole:read-permission');
+		Route::post('permission', [PermissionController::class, 'createPermission'])->middleware('checkRole:create-permission');
+		Route::put('permission/{id}', [PermissionController::class, 'updatePermission'])->middleware('checkRole:update-permission');
+		Route::delete('permission/{id}/hard', [PermissionController::class, 'hardDeletePermission'])->middleware('checkRole:delete-permission');
+		Route::delete('permission/{id}/soft', [PermissionController::class, 'softDeletePermission'])->middleware('checkRole:delete-permission');
+		Route::post('permission/{id}/restore', [PermissionController::class, 'restoreDeletedPermission'])->middleware('checkRole:restore-permission');
+		Route::get('permission/{id}/story', [LogsController::class, 'getPermissionLogs'])->middleware('checkRole:get-logs-permission');
 
-		Route::prefix('log')->group(function () {
-			Route::get('{id}/restore', [LogsController::class, 'restoreRow']);
-		});
+
+
+		Route::get('role/{id}/permission', [RoleAndPermissionController::class, 'getRolePermission'])->middleware('checkRole:read-role');
+		Route::get('role/{id}/permission/{permission_id}', [RoleAndPermissionController::class, 'addRolePermission'])->middleware('checkRole:update-role');
+		Route::delete('role/{id}/permission/{permission_id}/hard', [RoleAndPermissionController::class, 'hardDeleteRolePermission'])->middleware('checkRole:update-role');
+		Route::delete('role/{id}/permission/{permission_id}/soft', [RoleAndPermissionController::class, 'softDeleteRolePermission'])->middleware('checkRole:update-role');
+		Route::post('role/{id}/permission/{permission_id}/restore', [RoleAndPermissionController::class, 'restoreDeletedRolePermission'])->middleware('checkRole:update-role');
+	});
+
+	Route::prefix('log')->group(function () {
+		Route::get('{id}/restore', [LogsController::class, 'restoreRow']);
 	});
 });
 

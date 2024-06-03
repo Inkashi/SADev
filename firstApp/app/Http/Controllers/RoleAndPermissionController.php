@@ -68,8 +68,10 @@ class RoleAndPermissionController extends Controller
         try {
             $RolesAndPermissions = RolesAndPermissions::withTrashed()->where('role_id', $role_id)->where('permission_id', $permission_id)->first();
 
-            $Log = new LogsController();
-            $Log->createLogs('RolesAndPermissions', __FUNCTION__, $RolesAndPermissions->id, $RolesAndPermissions, 'null', $request->user()->id);
+            if (!$request->need_logs) {
+                $Log = new LogsController();
+                $Log->createLogs('RolesAndPermissions', __FUNCTION__, $RolesAndPermissions->id, 'null', $RolesAndPermissions, Auth::id());
+            }
 
             $RolesAndPermissions->forcedelete();
 
@@ -93,8 +95,10 @@ class RoleAndPermissionController extends Controller
         try {
             $RolesAndPermissions = RolesAndPermissions::withTrashed()->where('role_id', $role_id)->where('permission_id', $permission_id)->first();
 
-            $Log = new LogsController();
-            $Log->createLogs('RolesAndPermissions', __FUNCTION__, $RolesAndPermissions->id, $RolesAndPermissions, 'null', Auth::id());
+            if (!$request->need_logs) {
+                $Log = new LogsController();
+                $Log->createLogs('RolesAndPermissions', __FUNCTION__, $RolesAndPermissions->id, 'null', $RolesAndPermissions, Auth::id());
+            }
 
             $RolesAndPermissions->deleted_by = Auth::id();
             $RolesAndPermissions->delete();
@@ -119,9 +123,10 @@ class RoleAndPermissionController extends Controller
 
         try {
             $RolesAndPermissions = RolesAndPermissions::withTrashed()->where('role_id', $role_id)->where('permission_id', $permission_id)->first();
-            $Log = new LogsController();
-            $Log->createLogs('RolesAndPermissions', __FUNCTION__, $RolesAndPermissions->id, 'null', $RolesAndPermissions, Auth::id());
-
+            if (!$request->need_logs) {
+                $Log = new LogsController();
+                $Log->createLogs('RolesAndPermissions', __FUNCTION__, $RolesAndPermissions->id, 'null', $RolesAndPermissions, Auth::id());
+            }
             $RolesAndPermissions->restore();
             $RolesAndPermissions->deleted_by = null;
             $RolesAndPermissions->save();

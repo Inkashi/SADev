@@ -108,7 +108,6 @@ class MainController extends Controller
             ]);
             $Log = new LogsController();
             $Log->createLogs('User', "register", $user->id, 'null', $user, $user->id);
-            $Log->createLogs('UsersAndRoles', 'register', $role->id, 'null', $role, $user->id);
             DB::commit();
 
             return response()->json($user, Response::HTTP_CREATED);

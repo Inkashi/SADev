@@ -173,8 +173,6 @@ class UserController extends Controller
 			$Log = new LogsController();
 			$Log->createLogs('user', 'hardDeleteUser', $user->id, $user, 'null', Auth::id());
 			$usersAndRoles->each(function ($usersAndRoles) {
-				$Log = new LogsController();
-				$Log->createLogs('usersAndRoles', 'hardDeleteUser', $usersAndRoles->id, 'null', $usersAndRoles, Auth::id());
 				$usersAndRoles->forcedelete();
 			});
 			$user->forceDelete();
@@ -201,8 +199,6 @@ class UserController extends Controller
 			$Log = new LogsController();
 			$Log->createLogs('user', 'softDeleteUser', $user->id, $user, 'null', Auth::id());
 			$usersAndRoles->each(function ($usersAndRoles) {
-				$Log = new LogsController();
-				$Log->createLogs('usersAndRoles', 'softDeleteUser', $usersAndRoles->id, 'null', $usersAndRoles, Auth::id());
 				$usersAndRoles->deleted_by = Auth::id();
 				$usersAndRoles->delete();
 				$usersAndRoles->save();
@@ -230,8 +226,6 @@ class UserController extends Controller
 
 			$userAndRoles->each(function ($userAndRoles) {
 				$userAndRoles->restore();
-				$Log = new LogsController();
-				$Log->createLogs('usersAndRoles', 'restoreDeletedUser', $userAndRoles->id, 'null', $userAndRoles, Auth::id());
 				$userAndRoles->deleted_by = null;
 				$userAndRoles->save();
 			});
