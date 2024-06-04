@@ -31,6 +31,9 @@ class MainController extends Controller
         }
 
         $userTokenCount = $user->tokens()->count();
+        if (env('MAX_ACTIVE_TOKENS') == 0) {
+            return response()->json(['message' => 'change env MAX_ACTIVE_TOKENS'], 401);
+        }
         while ($userTokenCount >= env('MAX_ACTIVE_TOKENS', 3)) {
             $oldestToken = $user->tokens()->get();
             $oldestToken = $oldestToken->filter(function ($token) {
@@ -38,9 +41,6 @@ class MainController extends Controller
             });
             $oldestToken->sortBy('created_at')->first()->revoke();
             $userTokenCount = $user->tokens()->where('revoked', false)->count();
-        }
-        if (env('MAX_ACTIVE_TOKENS') == 0) {
-            return response()->json(['message' => 'change env MAX_ACTIVE_TOKENS'], 401);
         }
         $tokenResult = $user->createToken('Personal Access Token');
         $token = $tokenResult->token;
