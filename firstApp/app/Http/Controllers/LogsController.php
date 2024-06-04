@@ -34,7 +34,28 @@ class LogsController extends Controller
         return $Logs;
     }
 
+    public function getLogs(Request $request)
+    {
+        $id = $request->id;
+        $model = $request->model;
+        $Logs = null;
+        switch ($model) {
+            case 'user':
+                $Logs = ChangeLogs::where('created_by', $id)->get();
+                break;
+            case 'Roles':
+                $Logs = ChangeLogs::where('table_name', $model)->where('row_id', $id)->get();
+                break;
+            case 'permission':
+                $Logs = ChangeLogs::where('table_name', "Permissions")->where('row_id', $id)->get();
+                break;
+            default:
+                $Logs = response()->json(['error' => 'Not Found'], 404);
+                break;
+        }
 
+        return $Logs;
+    }
     public function getRoleLogs(Request $request)
     {
         $id = $request->id;

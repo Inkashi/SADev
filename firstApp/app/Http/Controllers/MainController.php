@@ -30,17 +30,14 @@ class MainController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $userTokenCount = $user->tokens()->count();
-        if (env('MAX_ACTIVE_TOKENS') == 0) {
+        $userTokenCount = $user->tokens()->where('revoked', false)->where('expires_at', '>', Carbon::now())->count();;
+        if (env('MAX_ACTIVE_TOKENS', 3) <= 0) {
             return response()->json(['message' => 'change env MAX_ACTIVE_TOKENS'], 401);
         }
         while ($userTokenCount >= env('MAX_ACTIVE_TOKENS', 3)) {
             $oldestToken = $user->tokens()->get();
-            $oldestToken = $oldestToken->filter(function ($token) {
-                return $token->revoked == false;
-            });
             $oldestToken->sortBy('created_at')->first()->revoke();
-            $userTokenCount = $user->tokens()->where('revoked', false)->count();
+            $userTokenCount--;
         }
         $tokenResult = $user->createToken('Personal Access Token');
         $token = $tokenResult->token;

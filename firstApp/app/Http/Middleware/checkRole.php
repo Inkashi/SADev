@@ -18,6 +18,7 @@ class checkRole
     public function handle(Request $request, Closure $next, ...$permission): Response
     {
         //проверка наличия нужного permission
+        //Смотреть только наивысшую роль пользователя
         if (!Auth::user()) {
             return response()->json(['error' => "You need login"], 403);
         }
