@@ -130,17 +130,14 @@ class MainController extends Controller
         if (!$user) {
             return response()->json(['message' => 'User not found'], 401);
         }
-        $userCode = UserAndCode::where('user_id', $user->id)->first();;
+        $userCode = $user->tokens()->where('revoked', false)->where('expires_at', '>', Carbon::now())->count();
         if ($code == $userCode->code && Carbon::now() <= $userCode->time_to_expire) {
             $userTokenCount = $user->tokens()->count();
-            if (env('MAX_ACTIVE_TOKENS') == 0) {
+            if (env('MAX_ACTIVE_TOKENS') <= 0) {
                 return response()->json(['message' => 'change env MAX_ACTIVE_TOKENS'], 401);
             }
             while ($userTokenCount >= env('MAX_ACTIVE_TOKENS', 3)) {
                 $oldestToken = $user->tokens()->get();
-                $oldestToken = $oldestToken->filter(function ($token) {
-                    return $token->revoked == false;
-                });
                 $oldestToken->sortBy('created_at')->first()->revoke();
                 $userTokenCount = $user->tokens()->where('revoked', false)->count();
             }
@@ -172,7 +169,7 @@ class MainController extends Controller
                 $now = Carbon::now();
                 $oldestCode = UserAndCode::where('user_id', $user->id)->oldest()->first();
                 $userCode->refreshCode += 1;
-                if ($now->diffInSeconds($oldestCode->updated_at) <= 30) {
+                if ($now->diffInSeconds($oldestCode->updated_at) <= env("REFRESH_CODE_LIMIT", 30)) {
                     return response()->json(['message' => 'You need to wait ' . 30 - $now->diffInSeconds($oldestCode->updated_at) . ' seconds'], 401);
                 }
             }

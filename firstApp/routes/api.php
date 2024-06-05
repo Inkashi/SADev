@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\changeEnvData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
@@ -33,7 +34,6 @@ Route::prefix('ref')->group(function () {
 		Route::delete('{id}/role/{role_id}/soft', [UserController::class, 'softDeleteUserRole'])->middleware('checkRole:delete-user');
 		Route::post('{id}/role/{role_id}/restore', [UserController::class, 'restoreDeletedUserRole'])->middleware('checkRole:delete-user');
 		Route::put('updateInformation', [UserController::class, 'updateInformation'])->middleware('checkRole:read-user');
-		Route::get('{id}/story', [LogsController::class, 'getUserLogs'])->middleware('checkRole:get-logs-user,delete-user');
 	});
 
 	Route::prefix('policy')->group(function () {
@@ -44,7 +44,6 @@ Route::prefix('ref')->group(function () {
 		Route::delete('role/{id}/hard', [RoleController::class, 'hardDeleteRole'])->middleware('checkRole:delete-role');
 		Route::delete('role/{id}/soft', [RoleController::class, 'softDeleteRole'])->middleware('checkRole:delete-role');
 		Route::post('role/{id}/restore', [RoleController::class, 'restoreDeletedRole'])->middleware('checkRole:restore-role');
-		Route::get('role/{id}/story', [LogsController::class, 'getRoleLogs'])->middleware('checkRole:get-logs-role');
 
 
 
@@ -55,7 +54,6 @@ Route::prefix('ref')->group(function () {
 		Route::delete('permission/{id}/hard', [PermissionController::class, 'hardDeletePermission'])->middleware('checkRole:delete-permission');
 		Route::delete('permission/{id}/soft', [PermissionController::class, 'softDeletePermission'])->middleware('checkRole:delete-permission');
 		Route::post('permission/{id}/restore', [PermissionController::class, 'restoreDeletedPermission'])->middleware('checkRole:restore-permission');
-		Route::get('permission/{id}/story', [LogsController::class, 'getPermissionLogs'])->middleware('checkRole:get-logs-permission');
 
 
 
@@ -67,6 +65,7 @@ Route::prefix('ref')->group(function () {
 	});
 
 	Route::prefix('log')->group(function () {
+		Route::get('{model}/{id}/story', [LogsController::class, 'getLogs'])->middleware('checkRole:get-logs-user,delete-user');
 		Route::get('{id}/restore', [LogsController::class, 'restoreRow']);
 	});
 });
@@ -75,20 +74,10 @@ Route::prefix('ref')->group(function () {
 
 Route::prefix('auth')->group(function () {
 
-	Route::get('login', function () {
-		return view('/api/auth/login');
-	})->name('/login');
-
 	Route::post('login', [MainController::class, "login"])->name('login');
 
 
-	Route::middleware('check')->group(function () {
-		Route::get('register', function () {
-			return view('/api/auth/register');
-		});
-
-		Route::post('register', [MainController::class, "register"]);
-	});
+	Route::post('register', [MainController::class, "register"])->middleware('check');
 
 	Route::middleware('auth:api')->group(function () {
 
@@ -99,6 +88,8 @@ Route::prefix('auth')->group(function () {
 		Route::post('out_all', [MainController::class, "outAll"]);
 
 		Route::get('tokens', [MainController::class, "getTokens"]);
+
+		Route::put('changeEnv', [changeEnvData::class, "updateEnv"]);
 	});
 
 	Route::post('refreshCode', [MainController::class, "refreshCode"]);
