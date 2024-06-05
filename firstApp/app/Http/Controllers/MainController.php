@@ -13,6 +13,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\UsersAndRoles;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserAndCode;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 
 class MainController extends Controller
@@ -31,7 +32,6 @@ class MainController extends Controller
         if ($userAndCode && $userAndCode->refreshCode >= env("MAX_CODE_COUNT", 3)) {
             $now = Carbon::now();
             $oldestCode = UserAndCode::where('user_id', $user->id)->oldest()->first();
-            $userAndCode->refreshCode += 1;
             if ($now->diffInSeconds($oldestCode->updated_at) <= 30) {
                 return response()->json(['message' => 'You need to wait ' . 30 - $now->diffInSeconds($oldestCode->updated_at) . ' seconds'], 401);
             }
@@ -39,8 +39,8 @@ class MainController extends Controller
 
         $code = rand(100000, 999999);
         if ($userAndCode) {
-            $userAndCode->refreshCode > 3 ? $userAndCode->refreshCode : $userAndCode->refreshCode += 1;
-            $userAndCode->time_to_expire = Carbon::now()->addMinutes(10);
+            $userAndCode->refreshCode >= 3 ? $userAndCode->refreshCode : $userAndCode->refreshCode += 1;
+            $userAndCode->time_to_expire = Carbon::now()->addMinutes(env('MAX_CODE_TIME', 10));
             $userAndCode->code = $code;
             $userAndCode->save();
         } else {
@@ -130,16 +130,19 @@ class MainController extends Controller
         if (!$user) {
             return response()->json(['message' => 'User not found'], 401);
         }
-        $userCode = $user->tokens()->where('revoked', false)->where('expires_at', '>', Carbon::now())->count();
+        $userCode = UserAndCode::where('user_id', $user->id)->first();
+        if (!$userCode) {
+            return response()->json(['message' => 'You need to login and request first code'], 401);
+        }
         if ($code == $userCode->code && Carbon::now() <= $userCode->time_to_expire) {
-            $userTokenCount = $user->tokens()->count();
+            $userTokenCount = $user->tokens()->where('revoked', false)->where('expires_at', '>', Carbon::now())->count();
             if (env('MAX_ACTIVE_TOKENS') <= 0) {
                 return response()->json(['message' => 'change env MAX_ACTIVE_TOKENS'], 401);
             }
             while ($userTokenCount >= env('MAX_ACTIVE_TOKENS', 3)) {
                 $oldestToken = $user->tokens()->get();
                 $oldestToken->sortBy('created_at')->first()->revoke();
-                $userTokenCount = $user->tokens()->where('revoked', false)->count();
+                $userTokenCount--;
             }
             $tokenResult = $user->createToken('Personal Access Token');
             $token = $tokenResult->token;
@@ -168,13 +171,12 @@ class MainController extends Controller
             if ($userCode->refreshCode >= env("MAX_CODE_COUNT", 3)) {
                 $now = Carbon::now();
                 $oldestCode = UserAndCode::where('user_id', $user->id)->oldest()->first();
-                $userCode->refreshCode += 1;
                 if ($now->diffInSeconds($oldestCode->updated_at) <= env("REFRESH_CODE_LIMIT", 30)) {
                     return response()->json(['message' => 'You need to wait ' . 30 - $now->diffInSeconds($oldestCode->updated_at) . ' seconds'], 401);
                 }
             }
-            $userCode->refreshCode > 3 ? $userCode->refreshCode : $userCode->refreshCode += 1;
-            $userCode->time_to_expire = Carbon::now()->addMinutes(10);
+            $userCode->refreshCode >= 3 ? $userCode->refreshCode = env('MAX_CODE_COUNT', 3) : $userCode->refreshCode += 1;
+            $userCode->time_to_expire = Carbon::now()->addMinutes(env('MAX_CODE_TIME', 10));
             $userCode->code = rand(100000, 999999);
             $userCode->save();
             Mail::raw("Используйте данный код чтобы войти: $userCode->code", function ($message) use ($user) {

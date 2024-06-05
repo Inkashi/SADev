@@ -29,23 +29,4 @@ class UpdateInfoRequest extends FormRequest
             'new_birthday' => 'nullable|date|nullable',
         ];
     }
-
-    public function messages(): array
-    {
-        return [
-            'new_username.unique' => 'The username has already been taken.',
-            'new_username.alpha' => 'The username must only contain letters.',
-            'new_username.regex' => 'The username must start with an uppercase letter.',
-            'new_username.min' => 'The username must be at least 7 characters.',
-            'new_email.email' => 'The email must be a valid email address.',
-            'new_email.unique' => 'The email has already been taken.',
-            'new_pass.required' => 'The password is required.',
-            'new_pass.min' => 'The password must be at least 8 characters.',
-            'new_pass.regex' => 'The password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.',
-            'old_pass.min' => 'The password must be at least 8 characters.',
-            'old_pass.regex' => 'The password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.',
-            'new_birthday.required' => 'The birthday is required.',
-            'new_birthday.date' => 'The birthday must be a valid date.',
-        ];
-    }
 }

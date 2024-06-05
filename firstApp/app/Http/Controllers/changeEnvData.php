@@ -10,14 +10,15 @@ class changeEnvData extends Controller
 {
     public function updateEnv(changeEnvRequest $request)
     {
-        $this->changeData('MAX_ACTIVE_TOKENS', $request->input('MAX_ACTIVE_TOKENS'));
-        $this->changeData('TOKEN_EXPIRATION_DAYS', $request->input('TOKEN_EXPIRATION_DAYS'));
-        $this->changeData('MAX_CODE_COUNT', $request->input('MAX_CODE_COUNT'));
-        $this->changeData('REFRESH_CODE_LIMIT', $request->input('REFRESH_CODE_LIMIT'));
+        $request->MAX_ACTIVE_TOKENS ? $this->changeData('MAX_ACTIVE_TOKENS', $request->MAX_ACTIVE_TOKENS) : null;
+        $request->TOKEN_EXPIRATION_DAYS ? $this->changeData('TOKEN_EXPIRATION_DAYS', $request->TOKEN_EXPIRATION_DAYS) : null;
+        $request->MAX_CODE_COUNT ? $this->changeData('MAX_CODE_COUNT', $request->MAX_CODE_COUNT) : null;
+        $request->REFRESH_CODE_LIMIT ? $this->changeData('REFRESH_CODE_LIMIT', $request->REFRESH_CODE_LIMIT) : null;
+        $request->MAX_CODE_TIME ? $this->changeData('MAX_CODE_TIME', $request->MAX_CODE_TIME) : null;
 
-        Artisan::call('config:cache');
+        Artisan::call('config:clear');
 
-        return response()->json(['MAX_ACTIVE_TOKENS' => env('MAX_ACTIVE_TOKENS')]);
+        return response()->json(['message' => 'Data updated'], 200);
     }
 
     private function changeData($key, $value)

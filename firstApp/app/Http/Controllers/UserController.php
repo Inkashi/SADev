@@ -55,13 +55,11 @@ class UserController extends Controller
 		DB::beginTransaction();
 
 		try {
-			$userPrevRoles = UsersAndRoles::where('user_id', $user_id)->get();
 			$usersAndRoles = UsersAndRoles::create([
 				'user_id' => $user_id,
 				'role_id' => $role_id,
 				'created_by' => $request->user()->id,
 			]);
-			$userAfterRoles = UsersAndRoles::where('user_id', $user_id)->get();
 			$Log = new LogsController();
 			$Log->createLogs('usersAndRoles', 'giveUserRole', $usersAndRoles->id, 'null', $usersAndRoles, $request->user()->id);
 
