@@ -18,5 +18,5 @@ use App\Http\Controllers\GitController;
 */
 
 Route::prefix('hooks')->group(function () {
-    Route::post('/git', [GitController::class, 'updateGit']);
+    Route::post('git', [GitController::class, 'updateGit']);
 });
